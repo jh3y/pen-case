@@ -1,0 +1,19 @@
+{
+  "name": "pen-case",
+  "version": "0.0.0",
+  "description": "Offline pen development",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jh3y/pen-case.git"
+  },
+  "author": "jh3y <jh3y@users.noreply.github.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jh3y/pen-case/issues"
+  },
+  "homepage": "https://github.com/jh3y/pen-case#readme"
+}
