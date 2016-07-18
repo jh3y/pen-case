@@ -1,5 +1,8 @@
+
 public/
 
 node_modules/
 
 .publish/
+
+deploy/
