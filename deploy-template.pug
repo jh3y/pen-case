@@ -29,10 +29,25 @@
 html
   body
     form(action='http://codepen.io/pen/define', method='POST')
-      input(type='hidden', name="data", value=`
-        {
-          "title": "New Pen!",
-          "html": "<div>Hello, World!</div>"
-        }
-      `)
+      input(type='hidden', name="data")
+      pre(id='markup')= SOURCE.MARKUP
+      pre(id='script')= SOURCE.SCRIPT
+      pre(id='style')= SOURCE.STYLE
       input(type='submit')
+    script.
+      (function(){
+        var input = document.querySelector('[name=data]');
+        var data = {
+          title: 'New pen!',
+          html_pre_processor: 'jade',
+          css_pre_processor: 'stylus',
+          js_pre_processor: 'babel',
+          html: document.querySelector('#markup').innerHTML,
+          css: document.querySelector('#style').innerHTML,
+          js: document.querySelector('#script').innerHTML
+        };
+        var json = JSON.stringify(data)
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&apos;");
+        input.setAttribute('value', json);
+      })();

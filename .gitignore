@@ -3,6 +3,6 @@ public/
 
 node_modules/
 
-.publish/
+tmp/
 
-deploy/
+DEPLOY_OPTIONS.js

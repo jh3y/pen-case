@@ -1,5 +1,3 @@
-PHONY: help
-
 MODULES = ./node_modules/.bin
 STYLUS = $(MODULES)/stylus
 BABEL = $(MODULES)/babel
@@ -8,61 +6,88 @@ PUG = $(MODULES)/pug
 BS = $(MODULES)/browser-sync
 
 OUTPUT_DIR = public
-DIST_DIR = dist
-SCRIPT_SRC = src/**/*.js
-SCRIPT_DEST = $(OUTPUT_DIR)
-STYLE_SRC = src/**/*.styl
-STYLE_DEST = $(OUTPUT_DIR)
-MARKUP_SRC = src/**/*.pug
-MARKUP_DEST = $(OUTPUT_DIR)
+DEPLOY_DIR = tmp
+SRC_BASE = src
 
-# Work on one pen at a time.
-# If no pen defined then throw error.
-# make pen check function that is used in anything but just make...
+SCRIPT_FILE = script.js
+STYLE_FILE = style.styl
+MARKUP_FILE = index.pug
+DEPLOY_OPTS_FILE = DEPLOY_OPTIONS.js
 
-POSTCSS_OPTS = --use autoprefixer -d $(STYLE_DEST)/ $(STYLE_DEST)/*.css
+BOILERPLATE_MARKUP = boilerplate/markup.boilerplate.pug
+BOILERPLATE_SCRIPT = boilerplate/script.boilerplate.js
+BOILERPLATE_STYLE = boilerplate/style.boilerplate.styl
+
+SCRIPT_DEST = $(OUTPUT_DIR)/script.js
+
+POSTCSS_OPTS = --use autoprefixer -d $(OUTPUT_DIR)/ $(OUTPUT_DIR)/*.css
+
+
+SCRIPT_SRC = $(SRC_BASE)/$(PEN)/$(SCRIPT_FILE)
+MARKUP_SRC = $(SRC_BASE)/$(PEN)/$(MARKUP_FILE)
+STYLE_SRC  = $(SRC_BASE)/$(PEN)/$(STYLE_FILE)
 
 help:
 	@grep -E '^[a-zA-Z\._-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
+# target that checks for pen to be set
+checkForPen:
+ifndef PEN
+	$(error PEN not set!!!)
+endif
+
 # Compile javascript using babel and copy to respective pen folder in public.
+compile-scripts: checkForPen ## compiles scripts
+	mkdir -pv $(OUTPUT_DIR)
+	$(BABEL) $(SCRIPT_SRC) -o $(SCRIPT_DEST)
 
-compile-scripts: ## compiles scripts
-	$(BABEL) $(SCRIPT_SRC) -d $(SCRIPT_DEST)
-
-watch-scripts: compile-scripts ## watch for script changes and compile
-	$(BABEL) $(SCRIPT_SRC) --watch -d $(SCRIPT_DEST)
+watch-scripts: checkForPen compile-scripts ## watch for script changes and compile
+	$(BABEL) $(SCRIPT_SRC) --watch -o $(SCRIPT_DEST)
 
 
-compile-styles: ## compiles styles
-	$(STYLUS) $(STYLE_SRC) -o $(STYLE_DEST) && $(POSTCSS) $(POSTCSS_OPTS)
+compile-styles: checkForPen ## compiles styles
+	$(STYLUS) $(STYLE_SRC) -o $(OUTPUT_DIR) && $(POSTCSS) $(POSTCSS_OPTS)
 
-watch-styles: ## watches and compiles styles
-	$(STYLUS) -w $(STYLE_SRC) -o $(STYLE_DEST)
+watch-styles: checkForPen compile-styles ## watches and compiles styles
+	$(STYLUS) -w $(STYLE_SRC) -o $(OUTPUT_DIR)
 
-compile-markup: ## compiles markup
-	$(PUG) -P $(MARKUP_SRC) -o $(MARKUP_DEST)
+# define PUG_OPTS
+# "{'deploy': true, markup: '`cat $(MARKUP_SRC)`'}"
+# endef
+# echo $(PUG_OPTS)
+compile-markup: checkForPen ## compiles markup
+	$(PUG) -P $(MARKUP_SRC) -o $(OUTPUT_DIR)
 	# $(PUG) -P $(MARKUP_SRC) -O $(FILE_NAME).config.json -o $(MARKUP_DEST)
 
-watch-markup: ## watch and compile markup
-	$(PUG) -wP $(MARKUP_SRC) -O $(FILE_NAME).config.json -o $(MARKUP_DEST)
+watch-markup: checkForPen compile-markup ## watch and compile markup
+	$(PUG) -wP $(MARKUP_SRC) -o $(OUTPUT_DIR)
 
 setup: ## set up project for development
 	npm install && mkdir -pv $(SCRIPT_DEST) && mkdir -pv $(STYLE_DEST)
 
-watch: ## run development watch
+watch: checkForPen ## run development watch
 	make watch-scripts & make watch-styles & make watch-markup
 
-build: ## build sources
+build: checkForPen ## build sources
 	make compile-scripts && make compile-styles && make compile-markup
 
-serve: build ## sets up browser-sync local static server with livereload
+serve: checkForPen build ## sets up browser-sync local static server with livereload
 	$(BS) start --port 1987 --files $(OUTPUT_DIR)/ --server $(OUTPUT_DIR)
 
-develop: ## run development task
+develop: checkForPen ## run development task
 	make serve & make watch
 
-NAME = 'JHEY'
+cleanup: ## tidy out any generated/deployed files
+	rm -rf public tmp
+	rm $(DEPLOY_OPTS_FILE)
 
-apple: ## test out doing somethings
-	echo $(NAME) $(PEN)
+deploy: checkForPen build ## generates POST page for pushing to Codepen
+	echo "var SOURCE = {}; SOURCE.MARKUP = \``cat $(MARKUP_SRC)`\`; SOURCE.SCRIPT = \``cat $(SCRIPT_SRC)`\`; SOURCE.STYLE= \``cat $(STYLE_SRC)`\`; exports.SOURCE = SOURCE;" > $(DEPLOY_OPTS_FILE)
+	$(PUG) -P deploy-template.pug -O $(DEPLOY_OPTS_FILE) -o tmp
+	open tmp/deploy-template.html
+
+create: checkForPen ## creates new source for pens
+	mkdir -pv $(SRC_BASE)/$(PEN)
+	cat $(BOILERPLATE_MARKUP) > $(MARKUP_SRC)
+	cat $(BOILERPLATE_SCRIPT) > $(SCRIPT_SRC)
+	cat $(BOILERPLATE_STYLE) > $(STYLE_SRC)
