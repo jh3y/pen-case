@@ -41,18 +41,18 @@ ifndef PEN
 endif
 
 # Compile javascript using babel and copy to respective pen folder in public.
-compile-scripts: checkForPen ## compiles scripts
+compile-script: checkForPen ## compiles scripts
 	mkdir -pv $(OUTPUT_DIR)
 	$(BABEL) $(SCRIPT_SRC) -o $(SCRIPT_DEST)
 
-watch-scripts: checkForPen compile-scripts ## watch for script changes and compile
+watch-script: checkForPen compile-script ## watch for script changes and compile
 	$(BABEL) $(SCRIPT_SRC) --watch -o $(SCRIPT_DEST)
 
 
-compile-styles: checkForPen ## compiles styles
+compile-style: checkForPen ## compiles styles
 	$(STYLUS) $(STYLE_SRC) -o $(OUTPUT_DIR) && $(POSTCSS) $(POSTCSS_OPTS)
 
-watch-styles: checkForPen compile-styles ## watches and compiles styles
+watch-style: checkForPen compile-style ## watches and compiles styles
 	$(STYLUS) -w $(STYLE_SRC) -o $(OUTPUT_DIR)
 
 compile-markup: checkForPen ## compiles markup
@@ -62,18 +62,18 @@ watch-markup: checkForPen compile-markup ## watch and compile markup
 	$(PUG) -wP $(MARKUP_COMPILE_SRC) -o $(OUTPUT_DIR)
 
 setup: ## set up project for development
-	npm install && mkdir -pv $(SCRIPT_DEST) && mkdir -pv $(STYLE_DEST)
+	npm install
 
 watch: checkForPen ## run development watch
-	make watch-scripts & make watch-styles & make watch-markup
+	make watch-script & make watch-style & make watch-markup
 
 build: checkForPen ## build sources
-	make compile-scripts && make compile-styles && make compile-markup
+	make compile-script && make compile-style && make compile-markup
 
 serve: checkForPen build ## sets up browser-sync local static server with livereload
 	$(BS) start --port 1987 --files $(OUTPUT_DIR)/ --server $(OUTPUT_DIR)
 
-develop: checkForPen ## run development task
+develop: checkForPen ## run development task for given PEN "make develop PEN=A"
 	make serve & make watch
 
 cleanup: ## tidy out any generated/deployed files
@@ -85,7 +85,7 @@ deploy: checkForPen build ## generates POST page for pushing to Codepen
 	$(PUG) -P deploy-template.pug -O $(DEPLOY_OPTS_FILE) -o tmp
 	open tmp/deploy-template.html
 
-create: checkForPen ## creates new source for pens
+create: checkForPen ## creates new source for pens by passing PEN variable
 	mkdir -pv $(SRC_BASE)/$(PEN)
 	cat $(BOILERPLATE_DEV_MARKUP) > $(MARKUP_SRC)
 	cat $(BOILERPLATE_MARKUP) > $(MARKUP_DEV_SRC)
