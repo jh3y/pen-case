@@ -1,32 +1,53 @@
-//- // All Optional
-//- title                 : "New Pen!",
-//- description           : "It's about stuff.",
-//- private               : false, // true || false
-//- tags                  : ["tag1", "tag2"], // an array of strings
-//- editors               : "101", // Set which editors are open. In this example HTML open, CSS closed, JS open
-//- layout                : "left", // top | left | right
-//- html                  : "<div>HTML here.</div>",
-//- html_pre_processor    : "none" || "slim" || "haml" || "markdown",
-//- css                   : "html { color: red; }",
-//- css_pre_processor     : "none" || "less" || "scss" || "sass" || "stylus",
-//- css_starter           : "normalize" || "reset" || "neither",
-//- css_prefix            : "autoprefixer" || "prefixfree" || "neither",
-//- js                    : "alert('test');",
-//- js_pre_processor      : "none" || "coffeescript" || "babel" || "livescript" || "typescript",
-//- html_classes          : "loading",
-//- head                  : "<meta name='viewport' content='width=device-width'>",
-//- css_external          : "http://yoursite.com/style.css", // semi-colon separate multiple files
-//- js_external           : "http://yoursite.com/script.js" // semi-colon separate multiple files
-//-
-//- // Deprecated Attributes
-//-
-//- // These go in the CSS itself now, like `@import "compass";`
-//- css_pre_processor_lib : "bourbon" || "compass" || "nib" || "lesshat",
-//-
-//- // Link up in js_external if needed
-//- js_modernizr : "true" || "false",
-//- js_library   : "jquery" || "mootools" || "prototype",
 html
+  head
+    style.
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        background-color: #111;
+        color: #e9e9e9;
+      }
+      body:before {
+        content: '';
+        box-sizing: border-box;
+        display: inline-block;
+        height: 40px;
+        width : 40px;
+        border: solid 20px #333;
+        border-right-color: #e9e9e9;
+        border-left-color: #e9e9e9;
+        border-radius: 100%;
+        left: 50%;
+        top: 50%;
+        position: absolute;
+        margin-left: -20px;
+        margin-top: -100px;
+        animation: rotate .75s infinite linear;
+      }
+      body:after {
+        content: "POSTing to Codepen!";
+        display: block;
+        font-size: 20px;
+        line-height: 20px;
+        height: 20px;
+        width: 100%;
+        position: absolute;
+        top: 50%;
+        margin-top: -10px;
+        left: 0;
+        right: 0;
+        text-align: center;
+      }
+      pre,
+      [type=submit] {
+        display: none;
+      }
+      @keyframes rotate {
+        to {
+          transform: rotate(360deg);
+        }
+      }
   body
     form(action='http://codepen.io/pen/define', method='POST')
       input(type='hidden', name="data")
@@ -37,8 +58,10 @@ html
     script.
       (function(){
         var input = document.querySelector('[name=data]');
+        var submit = document.querySelector('[type=submit]');
         var data = {
           title: 'New pen!',
+          description: 'A cool new pen!',
           html_pre_processor: 'jade',
           css_pre_processor: 'stylus',
           js_pre_processor: 'babel',
@@ -50,4 +73,5 @@ html
           .replace(/"/g, "&quot;")
           .replace(/'/g, "&apos;");
         input.setAttribute('value', json);
+        submit.click();
       })();
