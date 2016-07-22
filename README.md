@@ -7,6 +7,12 @@ Based off of my personal preference for pens. Therefore using Stylus(w/ autopref
 ## Why
 Because I'm not always online, but I want a quick and easy way to work on pens locally and then simply push them up to CodePen later. Plus, it's nice to have them all in version control.
 
+## Basic example
+```shell
+make create PEN=NewPen
+make deploy PEN=NewPen
+```
+
 ## Usage
 The boilerplate is put together using `Make` with a self-documented `Makefile`.
 
